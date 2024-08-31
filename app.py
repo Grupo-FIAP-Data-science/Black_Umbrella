@@ -18,7 +18,7 @@ st.set_page_config(
     layout="wide")
 
 # Carregar dados dos distritos
-df_distritos = pd.read_csv('/home/ryanrodr/FIAP/Black_Umbrella/dados/distritos_lat_lon.csv')
+df_distritos = pd.read_csv('dados/distritos_lat_lon.csv')
 
 # Adicionar filtro de distrito na barra lateral
 st.sidebar.title("Navegação")
@@ -135,7 +135,7 @@ def dados_historicos():
             st.plotly_chart(fig_area, use_container_width=True)
     
 def dados_localizacao():
-    df_estacoes_metro = pd.read_csv('/home/ryanrodr/FIAP/Black_Umbrella/dados/localizacao_estacoes_metro.csv')
+    df_estacoes_metro = pd.read_csv('dados/localizacao_estacoes_metro.csv')
     
     latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
     longitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Longitude'].values[0]
@@ -146,7 +146,7 @@ def dados_localizacao():
     for index, row in df_estacoes_metro.iterrows():
         folium.Marker(
             location=[row['lat'], row['lon']],
-            popup=row['name'],
+            popup=row['name2'],
             icon=folium.Icon(icon='train', prefix='fa')
         ).add_to(marker_cluster)
 
@@ -155,7 +155,7 @@ def dados_localizacao():
 
 def dados_densidade_populacional():
     # Carregar o shapefile
-    df_densidade_pop = gpd.read_file('/home/ryanrodr/FIAP/Black_Umbrella/dados/densidade_demografica/SIRGAS_SHP_densidade_demografica_2010.shp')
+    df_densidade_pop = gpd.read_file('dados/densidade_demografica/SIRGAS_SHP_densidade_demografica_2010.shp')
 
     # Converter o CRS para EPSG:4326
     df_densidade_pop = df_densidade_pop.to_crs(epsg=4326)
