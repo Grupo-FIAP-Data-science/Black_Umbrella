@@ -64,7 +64,7 @@ def main():
     start_date = datetime(2000, 1, 1)
     end_date = datetime(2024, 9, 7)
     
-    df_coord = pd.read_csv('dados/distritos_lat_lon.csv')
+    df_coord = pd.read_csv('../dados/distritos_lat_lon.csv')
 
     # Coleta os dados da API
     df = fetch_meteostat_data(df_coord, start_date, end_date)
