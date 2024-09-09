@@ -1,5 +1,5 @@
 import pandas as pd
-from meteostat import Point, Daily
+from meteostat import Point, Hourly
 from datetime import datetime
 import boto3
 import os
@@ -18,7 +18,7 @@ def fetch_meteostat_data(df_coord, start_date, end_date):
         location = Point(latitude, longitude)
         
         # Obter dados diários do Meteostat
-        data = Daily(location, start_date, end_date).fetch()
+        data = Hourly(location, start_date, end_date).fetch()
         
         # Adicionar uma coluna com o nome do distrito
         data['Distrito'] = row['Distrito']
@@ -27,10 +27,6 @@ def fetch_meteostat_data(df_coord, start_date, end_date):
         all_data.append(data)
     
     final_data = pd.concat(all_data)
-    
-    # Adicionando colunas para ano, mês e dia para partições
-    final_data['Ano'] = final_data.index.year
-    final_data['Mes'] = final_data.index.month
 
     final_data.reset_index(inplace=True)
 
@@ -54,17 +50,19 @@ def upload_to_s3(df):
 
     # Carregar o arquivo CSV para o S3
     s3.put_object(Bucket='black-umbrella-fiap',
-                Key='bronze/meteostat/dados_historicos_1950_2000.csv',
+                Key='bronze/meteostat/dados_historicos_2020_2024.csv',
                 Body=df.getvalue())
+    
+    print('Arquivo enviado para o S3 com sucesso!')
 
 
 # Função principal
 def main():
     # Datas de início e fim (pode ser ajustado para obter dados incrementais)
-    start_date = datetime(1950, 1, 1)
-    end_date = datetime(2000, 12, 31)
+    start_date = datetime(2020, 1, 1)
+    end_date = datetime(2024, 9, 7)
     
-    df_coord = pd.read_csv('../dados/distritos_lat_lon.csv')
+    df_coord = pd.read_csv('./dados/distritos_lat_lon.csv')
 
     # Coleta os dados da API
     df = fetch_meteostat_data(df_coord, start_date, end_date)
