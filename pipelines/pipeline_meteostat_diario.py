@@ -69,7 +69,7 @@ def main():
     object_key = 'bronze/meteostat/dados_diarios_2024.csv'
     local_file_name = 'dados_diarios_2024.csv'
 
-    df_coord = pd.read_csv('dados/distritos_lat_lon.csv')
+    df_coord = pd.read_csv('../dados/distritos_lat_lon.csv')
 
     # Passos para atualizar o CSV
     download_csv_from_s3(bucket_name, object_key, local_file_name)  # Baixar o CSV existente
