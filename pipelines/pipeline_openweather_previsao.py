@@ -8,6 +8,8 @@ def upload_csv_to_s3(bucket_name, object_key, local_file_name):
     s3 = boto3.client('s3')
     s3.put_object(Bucket=bucket_name, Key=object_key, Body=local_file_name.getvalue())
 
+    print(f"Arquivo {object_key} enviado para o bucket {bucket_name}")
+
 # Função para buscar dados dos proximos 5 dias usando a API OpenWeather
 def fetch_new_data(df_coord):
     lista = []
