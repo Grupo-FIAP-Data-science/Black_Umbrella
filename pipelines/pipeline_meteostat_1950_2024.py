@@ -22,6 +22,8 @@ def dados_historicos_diario(df_coord, start_date, end_date):
         
         # Adicionar uma coluna com o nome do distrito
         data['Distrito'] = row['Distrito']
+        data['latitude_distrito'] = latitude
+        data['longitude_distrito'] = longitude
         
         # Adicionar os dados à lista
         all_data.append(data)

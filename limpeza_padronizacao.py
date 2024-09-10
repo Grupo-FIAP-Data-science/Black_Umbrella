@@ -29,7 +29,7 @@ def padronizar_dados(df):
     return df
 
 # Exemplo de uso
-arquivo = '/home/ryanrodr/FIAP/Black_Umbrella/dados/codigos_distritos_msp.csv'
-df = pd.read_csv(arquivo, sep=';', encoding='latin1')
-df_padronizado = padronizar_dados(df)
-print(df_padronizado)
+# arquivo = '/home/ryanrodr/FIAP/Black_Umbrella/dados/codigos_distritos_msp.csv'
+# df = pd.read_csv(arquivo, sep=';', encoding='latin1')
+# df_padronizado = padronizar_dados(df)
+# print(df_padronizado)
