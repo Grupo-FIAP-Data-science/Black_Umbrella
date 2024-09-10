@@ -8,7 +8,7 @@ from io import StringIO
 
 
 # Função para buscar os dados da API da Meteostat
-def fetch_meteostat_data(df_coord, start_date, end_date):
+def dados_historicos_hora(df_coord, start_date, end_date):
     
     all_data = []
 
@@ -65,7 +65,7 @@ def main():
     df_coord = pd.read_csv('./dados/distritos_lat_lon.csv')
 
     # Coleta os dados da API
-    df = fetch_meteostat_data(df_coord, start_date, end_date)
+    df = dados_historicos_hora(df_coord, start_date, end_date)
   
     # Enviar os arquivos particionados para o S3
     upload_to_s3(df)
