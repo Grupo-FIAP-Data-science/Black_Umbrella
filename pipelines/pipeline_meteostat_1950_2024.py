@@ -8,7 +8,7 @@ from io import StringIO
 
 
 # Função para buscar os dados da API da Meteostat
-def fetch_meteostat_data(df_coord, start_date, end_date):
+def dados_historicos_diario(df_coord, start_date, end_date):
     
     all_data = []
 
@@ -50,7 +50,7 @@ def upload_to_s3(df):
 
     # Carregar o arquivo CSV para o S3
     s3.put_object(Bucket='black-umbrella-fiap',
-                Key='bronze/meteostat/dados_historicos_1950_2019.csv',
+                Key='bronze/meteostat/dados_diarios_1950_2024.csv',
                 Body=df.getvalue())
     
     print('Arquivo enviado para o S3 com sucesso!')
@@ -60,12 +60,12 @@ def upload_to_s3(df):
 def main():
     # Datas de início e fim (pode ser ajustado para obter dados incrementais)
     start_date = datetime(1950, 1, 1)
-    end_date = datetime(2019, 12, 31)
+    end_date = datetime(2024, 9, 9)
     
     df_coord = pd.read_csv('./dados/distritos_lat_lon.csv')
 
     # Coleta os dados da API
-    df = fetch_meteostat_data(df_coord, start_date, end_date)
+    df = dados_historicos_diario(df_coord, start_date, end_date)
   
     # Enviar os arquivos particionados para o S3
     upload_to_s3(df)

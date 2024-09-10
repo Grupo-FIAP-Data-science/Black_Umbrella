@@ -4,14 +4,14 @@ import requests
 from io import StringIO
 
 # Função para enviar o CSV atualizado de volta ao S3
-def upload_csv_to_s3(bucket_name, object_key, local_file_name):
+def upload_csv_s3(bucket_name, object_key, local_file_name):
     s3 = boto3.client('s3')
     s3.put_object(Bucket=bucket_name, Key=object_key, Body=local_file_name.getvalue())
 
     print(f"Arquivo {object_key} enviado para o bucket {bucket_name}")
 
 # Função para buscar dados dos proximos 5 dias usando a API OpenWeather
-def fetch_new_data(df_coord):
+def dados_previsao(df_coord):
     lista = []
 
     for index, row in df_coord.iterrows():
@@ -67,10 +67,10 @@ def main():
     df_coord = pd.read_csv('./dados/distritos_lat_lon.csv')
 
     # Passos para atualizar o CSV
-    previsoes = fetch_new_data(df_coord)  # Buscar novos dados
+    previsoes = dados_previsao(df_coord)  # Buscar novos dados
     csv_buffer = StringIO()
     previsoes.to_csv(csv_buffer, index=False)
-    upload_csv_to_s3(bucket_name, object_key, csv_buffer)  # Enviar o CSV para o S3
+    upload_csv_s3(bucket_name, object_key, csv_buffer)  # Enviar o CSV para o S3
 
 if __name__ == '__main__':
     main()
