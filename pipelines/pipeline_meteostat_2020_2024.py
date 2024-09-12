@@ -5,6 +5,9 @@ import boto3
 import os
 from dotenv import load_dotenv
 from io import StringIO
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 # Função para buscar os dados da API da Meteostat
@@ -22,6 +25,8 @@ def dados_historicos_hora(df_coord, start_date, end_date):
         
         # Adicionar uma coluna com o nome do distrito
         data['Distrito'] = row['Distrito']
+        data['Latitude'] = latitude
+        data['Longitude'] = longitude
         
         # Adicionar os dados à lista
         all_data.append(data)
@@ -50,7 +55,7 @@ def upload_to_s3(df):
 
     # Carregar o arquivo CSV para o S3
     s3.put_object(Bucket='black-umbrella-fiap',
-                Key='bronze/meteostat/dados_historicos_2020_2024.csv',
+                Key='bronze/meteostat_horario/horario_2020_2024.csv',
                 Body=df.getvalue())
     
     print('Arquivo enviado para o S3 com sucesso!')
@@ -60,7 +65,7 @@ def upload_to_s3(df):
 def main():
     # Datas de início e fim (pode ser ajustado para obter dados incrementais)
     start_date = datetime(2020, 1, 1)
-    end_date = datetime(2024, 9, 7)
+    end_date = datetime(2024, 9, 9)
     
     df_coord = pd.read_csv('./dados/distritos_lat_lon.csv')
 
