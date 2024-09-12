@@ -34,12 +34,8 @@ def dados_historicos_diario(df_coord, start_date, end_date):
     final_data = pd.concat(all_data)
 
     final_data.reset_index(inplace=True)
-
-    # Salva o DataFrame em um buffer
-    csv_buffer = StringIO()
-    final_data.to_csv(csv_buffer, index=False)
     
-    return csv_buffer
+    return final_data
 
 
 # Função para enviar para o S3
