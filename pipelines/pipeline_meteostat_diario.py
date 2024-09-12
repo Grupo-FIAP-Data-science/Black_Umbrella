@@ -3,6 +3,9 @@ import pandas as pd
 from meteostat import Point, Hourly, Daily
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
+import warnings
+
+warnings.filterwarnings("ignore")
 
 # Função para baixar o CSV do S3
 def acessar_csv_s3(bucket_name, object_key):
@@ -39,6 +42,8 @@ def novos_registros_hora(df_coord):
         
         # Adicionar uma coluna com o nome do distrito
         data['Distrito'] = row['Distrito']
+        data['Latitude'] = latitude
+        data['Longitude'] = longitude
         
         # Adicionar os dados à lista
         all_data.append(data)
@@ -53,8 +58,8 @@ def novos_registros_hora(df_coord):
 def dados_historicos_diario(df_coord):
     
     # Data de ontem
-    start_date = datetime.now() - timedelta(days=1)
-    end_date = start_date + timedelta(days=1)
+    start_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    end_date = start_date + timedelta(hours=23)
 
     all_data = []
 
@@ -68,6 +73,8 @@ def dados_historicos_diario(df_coord):
         
         # Adicionar uma coluna com o nome do distrito
         data['Distrito'] = row['Distrito']
+        data['Latitude'] = latitude
+        data['Longitude'] = longitude
         
         # Adicionar os dados à lista
         all_data.append(data)
@@ -76,11 +83,7 @@ def dados_historicos_diario(df_coord):
 
     final_data.reset_index(inplace=True)
 
-    # Salva o DataFrame em um buffer
-    csv_buffer = StringIO()
-    final_data.to_csv(csv_buffer, index=False)
-    
-    return csv_buffer
+    return final_data
 
 # Atualizar o CSV existente
 def update_csv(df, new_data):
@@ -96,17 +99,17 @@ def update_csv(df, new_data):
 # Função principal
 def main():
     # Configurações do S3
-    bucket_name = 'black-umbrella-fiap'
-    object_key = 'bronze/meteostat/dados_historicos_2020_2024.csv' # Arquivo de dados históricos por hora
-
     bucket_name2 = 'black-umbrella-fiap'
-    object_key2 = 'bronze/meteostat/dados_diarios_1950_2024.csv' # Arquivo de dados históricos diarios
+    object_key2 = 'bronze/meteostat_horario/horario_2020_2024.csv' # Arquivo de dados históricos por hora
+
+    bucket_name = 'black-umbrella-fiap'
+    object_key = 'bronze/meteostat_diario/historico_diario_1950_2024.csv' # Arquivo de dados históricos diarios
 
     df_coord = pd.read_csv('./dados/distritos_lat_lon.csv')
 
     # Passos para atualizar o CSV
     df = acessar_csv_s3(bucket_name, object_key)  # Baixar o CSV existente
-    new_data = novos_registros_hora(df_coord)  # Buscar novos dados
+    new_data = dados_historicos_diario(df_coord)  # Buscar novos dados
     df_final = update_csv(df, new_data)  # Atualizar o CSV
     csv_buffer = StringIO()
     df_final.to_csv(csv_buffer, index=False)
@@ -117,7 +120,7 @@ def main():
     df_final2 = update_csv(df2, new_data2)  # Atualizar o CSV
     csv_buffer2 = StringIO()
     df_final2.to_csv(csv_buffer2, index=False)
-    upload_csv_s3(bucket_name, object_key, csv_buffer2)
+    upload_csv_s3(bucket_name2, object_key2, csv_buffer2)
 
 if __name__ == '__main__':
     main()
