@@ -61,15 +61,17 @@ def upload_to_s3(df):
 def main():
     # Datas de início e fim (pode ser ajustado para obter dados incrementais)
     start_date = datetime(2020, 1, 1)
-    end_date = datetime(2024, 9, 9)
+    end_date = datetime(2024, 9, 16)
     
     df_coord = pd.read_csv('./dados/distritos_lat_lon.csv')
 
     # Coleta os dados da API
     df = dados_historicos_hora(df_coord, start_date, end_date)
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
   
     # Enviar os arquivos particionados para o S3
-    upload_to_s3(df)
+    upload_to_s3(csv_buffer)
 
 if __name__ == '__main__':
     main()
