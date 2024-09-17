@@ -74,7 +74,6 @@ def main():
                 'localizacoes/localizacao_servicos_saude_latlon.csv', 'ocorrencias/ocorrencias_com_distritos.csv', 'openweather/dados_previsao_meteorologica.csv']
     bucket_name = 'black-umbrella-fiap'
 
-
     for prefixo in prefixos:
         # Passos para atualizar o CSV
         df = acessar_csv_s3(bucket_name, prefixo)  # Baixar o CSV existente

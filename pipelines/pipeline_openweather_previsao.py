@@ -46,8 +46,12 @@ def dados_previsao(df_coord):
                     'Pressão': item['main']['pressure'],
                     'Condições': item['weather'][0]['description'],
                     'Velocidade do Vento': item['wind']['speed'],
+                    'Direção do Vento': item['wind']['deg'],
+                    'Precipitação': item.get('rain', {}).get('3h', 0),
                     'Nuvens': item['clouds']['all'],
-                    'Distrito': row['Distrito']
+                    'Distrito': row['Distrito'],
+                    'Latitude': latitude,
+                    'Longitude': longitude
                 }
                 lista.append(detalhes)
 
