@@ -20,7 +20,6 @@ st.set_page_config(
     layout="wide"
 )
 
-
 # Estilos personalizados
 st.markdown(
     """
@@ -50,13 +49,14 @@ st.markdown(
 df_distritos = pd.read_csv('dados/distritos_lat_lon.csv')
 
 # Adicionar filtro de distrito na barra lateral
-st.sidebar.title("Navegação")
-page = st.sidebar.radio("Escolha a Página", ["Dados Diários", "Dados Históricos", "Dados de Localização", "Dados Densidade Populacional", "Previsão de Ocorrências"])
-
-# Adicionar filtro de distrito global
 st.sidebar.subheader("Filtro de Distrito")
 distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
+# Adicionar opção de navegação na barra lateral
+st.sidebar.title("Navegação")
+page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Previsão de Ocorrências"])
+
+# Função para exibir dados diários
 def dados_diarios():
     # Obter latitude e longitude do distrito selecionado
     latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
@@ -71,59 +71,70 @@ def dados_diarios():
     # Obter ícone do clima
     icon_url = f"http://openweathermap.org/img/wn/{weather_data['weather'][0].get('icon', '01d')}@2x.png"
 
-    # Configurar layout com colunas
-    col1, col2 = st.columns([1, 2])
+    # Configurar layout com duas colunas
+    col1, col2 = st.columns(2)
 
     with col1:
-        st.image(icon_url, width=100)  # Exibir ícone do clima
+        st.image(icon_url, width=100)
         st.subheader(f"{weather_data['weather'][0].get('description', 'Não disponível').capitalize()}")
         st.metric("Temperatura Atual (°C)", weather_data['main'].get('temp', 'N/A'))
         st.metric("Sensação Térmica (°C)", weather_data['main'].get('feels_like', 'N/A'))
+        st.metric("Temperatura Máxima (°C)", weather_data['main'].get('temp_max', 'Não disponível'))
+        st.metric("Temperatura Mínima (°C)", weather_data['main'].get('temp_min', 'Não disponível'))
+
+        st.write("### Horário Solar")
+        st.write(f"**Nascer do Sol:** {pd.to_datetime(weather_data['sys'].get('sunrise', 0), unit='s').strftime('%H:%M:%S')}")
+        st.write(f"**Pôr do Sol:** {pd.to_datetime(weather_data['sys'].get('sunset', 0), unit='s').strftime('%H:%M:%S')}")
+        st.write(f"**Timezone:** {weather_data.get('timezone', 'Não disponível')} s")
 
     with col2:
+        st.image(icon_url, width=100)
         st.write("### Informações Detalhadas")
-        st.write(f"**Temperatura Máxima:** {weather_data['main'].get('temp_max', 'Não disponível')} °C")
-        st.write(f"**Temperatura Mínima:** {weather_data['main'].get('temp_min', 'Não disponível')} °C")
         st.write(f"**Pressão Atmosférica:** {weather_data['main'].get('pressure', 'Não disponível')} hPa")
         st.write(f"**Umidade:** {weather_data['main'].get('humidity', 'Não disponível')}%")
         st.write(f"**Velocidade do Vento:** {weather_data['wind'].get('speed', 'Não disponível')} m/s")
         st.write(f"**Direção do Vento:** {weather_data['wind'].get('deg', 'Não disponível')}°")
-
-    # Exibir dados em formato de caixas
-    st.write("### Outras Informações")
-    col3, col4, col5 = st.columns(3)
-    with col3:
+        st.write("### Outras Informações")
         st.metric("Visibilidade (m)", weather_data.get('visibility', 'N/A'))
-    with col4:
         st.metric("Cobertura de Nuvens (%)", weather_data['clouds'].get('all', 'N/A'))
-    with col5:
         st.metric("Precipitação (última 1h)", weather_data.get('rain', {}).get('1h', 'N/A'))
 
-    # Exibir informações sobre o nascer e pôr do sol
-    st.write("### Horário Solar")
-    col6, col7 = st.columns(2)
-    with col6:
-        st.write(f"**Nascer do Sol:** {pd.to_datetime(weather_data['sys'].get('sunrise', 0), unit='s').strftime('%H:%M:%S')}")
-    with col7:
-        st.write(f"**Pôr do Sol:** {pd.to_datetime(weather_data['sys'].get('sunset', 0), unit='s').strftime('%H:%M:%S')}")
-
-    st.write(f"**Timezone:** {weather_data.get('timezone', 'Não disponível')} s")
-
+import tempfile  # Importar a biblioteca para criar arquivos temporários
+# Função para exibir dados históricos com filtro de data
 def dados_historicos():
     latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
     longitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Longitude'].values[0]
     location = Point(latitude, longitude)
-    
-    start = datetime(2024, 8, 1)
-    end = datetime(2024, 8, 31)
 
-    data = Daily(location, start, end).fetch()
+    # Filtro de data para o usuário selecionar o período
+    st.sidebar.subheader("Selecione o Período")
+    start_date = st.sidebar.date_input("Data de Início", datetime(2024, 8, 1))
+    end_date = st.sidebar.date_input("Data de Fim", datetime(2024, 8, 31))
 
-    if data.empty:
-        st.warning("Nenhum dado disponível para o período selecionado.")
+    # Verifica se a data final é posterior à data inicial
+    if start_date > end_date:
+        st.error("A data final deve ser posterior à data inicial.")
     else:
-        data = data.dropna(axis=1)
-        data = data.reset_index()
+        # Obter dados históricos para o período selecionado
+        start = datetime.combine(start_date, datetime.min.time())
+        end = datetime.combine(end_date, datetime.min.time())
+
+        data = Daily(location, start, end).fetch()
+
+        if data.empty:
+            st.warning("Nenhum dado disponível para o período selecionado.")
+        else:
+            data = data.dropna(axis=1)
+            data = data.reset_index()
+
+            # Criar um botão de download
+            csv = data.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Baixar Dados Históricos (CSV)",
+                data=csv,
+                file_name=f'dados_historicos_{distrito_selecionado}.csv',
+                mime='text/csv'
+            )
 
         fig_line = px.line(data, x='time', y=['tavg', 'tmin', 'tmax'], labels={
             "value": "Temperatura (°C)",
@@ -158,9 +169,6 @@ def dados_historicos():
         st.title(f"Dados Históricos - {distrito_selecionado}")
 
         with st.container():
-            st.subheader("Tabela de Dados")
-            st.dataframe(data, use_container_width=True)
-
             st.subheader("Gráfico de Linhas das Temperaturas")
             st.plotly_chart(fig_line, use_container_width=True)
 
@@ -176,9 +184,10 @@ def dados_historicos():
             st.subheader("Gráfico de Área das Temperaturas")
             st.plotly_chart(fig_area, use_container_width=True)
 
+# Função para exibir dados de localização
 def dados_localizacao():
     df_estacoes_metro = pd.read_csv('dados/localizacao_estacoes_metro.csv')
-    
+
     latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
     longitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Longitude'].values[0]
 
@@ -195,52 +204,47 @@ def dados_localizacao():
     st.title(f"Mapa Interativo para {distrito_selecionado}")
     st_folium(map, width=700)
 
+# Função para exibir dados de densidade populacional
 def dados_densidade_populacional():
-    # Carregar o shapefile usando geopandas
     df_densidade_pop = gpd.read_file('/home/ryanrodr/FIAP/Black_Umbrella/dados/densidade_demografica/SIRGAS_SHP_densidade_demografica_2010.shp')
 
-    # Remover valores ausentes
     df_densidade_pop = df_densidade_pop.dropna()
-
-    # Converter o CRS para EPSG:4326 (latitude/longitude)
     df_densidade_pop = df_densidade_pop.to_crs(epsg=4326)
-
-    # Extrair os centroides dos polígonos para usar como pontos no heatmap
     df_densidade_pop['centroid'] = df_densidade_pop.geometry.centroid
 
-    # Criar uma lista de pontos de calor (latitude, longitude, peso)
     heat_data = [[point.y, point.x, pop] for point, pop in zip(df_densidade_pop['centroid'], df_densidade_pop['populacao'])]
 
-    # Criar um mapa base centralizado em São Paulo
     m = folium.Map(location=[-23.5505, -46.6333], zoom_start=12)
-
-    # Adicionar o HeatMap ao mapa base
     HeatMap(heat_data, radius=15, max_zoom=13).add_to(m)
 
-    # Salvar o mapa como arquivo HTML
     map_file = '/tmp/heatmap.html'
     m.save(map_file)
 
-    # Ler o arquivo HTML e codificar em Base64
     with open(map_file, 'r') as file:
         map_data = file.read()
-    
-    map_data_base64 = base64.b64encode(map_data.encode()).decode()
 
-    # Criar o link de download
+    map_data_base64 = base64.b64encode(map_data.encode()).decode()
     href = f'<a href="data:file/html;base64,{map_data_base64}" download="heatmap.html">Download do Mapa</a>'
 
-    # Exibir o link de download no Streamlit
     st.title("Mapa de Densidade Populacional (Heatmap)")
     st.write("Clique no link abaixo para baixar o mapa de calor:")
     st.markdown(href, unsafe_allow_html=True)
 
-# Selecionar a página ativa
-if page == "Dados Diários":
-    dados_diarios()
-elif page == "Dados Históricos":
-    dados_historicos()
+# Seleção da página para exibição
+if page == "Escolha entre os boletins":
+    st.sidebar.subheader("Selecione o Boletim")
+    boletim = st.sidebar.radio("Escolha o tipo de boletim", ["Dados Diários", "Dados Históricos"])
+
+    if boletim == "Dados Diários":
+        dados_diarios()
+    elif boletim == "Dados Históricos":
+        dados_historicos()
+
 elif page == "Dados de Localização":
     dados_localizacao()
+
 elif page == "Dados Densidade Populacional":
     dados_densidade_populacional()
+
+elif page == "Previsão de Ocorrências":
+    st.write("Página de Previsão de Ocorrências ainda em desenvolvimento.")
