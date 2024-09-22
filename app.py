@@ -48,12 +48,14 @@ st.markdown(
 # Carregar dados dos distritos
 df_distritos = pd.read_csv('dados/distritos_lat_lon.csv')
 
+# Exibir logo na sidebar
+st.sidebar.image("/home/ryanrodr/Downloads/black_umbrella.jpeg", width=300)
+
 # Adicionar filtro de distrito na barra lateral
 st.sidebar.subheader("Navegação")
 distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
 # Adicionar opção de navegação na barra lateral
-# st.sidebar.title("Navegação")
 page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Previsão de Ocorrências"])
 
 # Função para exibir dados diários
