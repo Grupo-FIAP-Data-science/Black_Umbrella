@@ -20,6 +20,7 @@ st.set_page_config(
     layout="wide"
 )
 
+
 # Estilos personalizados
 st.markdown(
     """
@@ -29,6 +30,9 @@ st.markdown(
     }
     h1, h2, h3 {
         color: rgb(0, 0, 204); /* Azul */
+    }
+    .css-1d391kg {
+        background-color: rgb(70, 70, 70); /* Cor da sidebar */
     }
     .metric {
         color: rgb(255, 215, 0); /* Amarelo */
