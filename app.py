@@ -49,11 +49,11 @@ st.markdown(
 df_distritos = pd.read_csv('dados/distritos_lat_lon.csv')
 
 # Adicionar filtro de distrito na barra lateral
-st.sidebar.subheader("Filtro de Distrito")
+st.sidebar.subheader("Navegação")
 distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
 # Adicionar opção de navegação na barra lateral
-st.sidebar.title("Navegação")
+# st.sidebar.title("Navegação")
 page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Previsão de Ocorrências"])
 
 # Função para exibir dados diários
@@ -99,7 +99,6 @@ def dados_diarios():
         st.metric("Cobertura de Nuvens (%)", weather_data['clouds'].get('all', 'N/A'))
         st.metric("Precipitação (última 1h)", weather_data.get('rain', {}).get('1h', 'N/A'))
 
-import tempfile  # Importar a biblioteca para criar arquivos temporários
 # Função para exibir dados históricos com filtro de data
 def dados_historicos():
     latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
@@ -135,7 +134,6 @@ def dados_historicos():
                 file_name=f'dados_historicos_{distrito_selecionado}.csv',
                 mime='text/csv'
             )
-
         fig_line = px.line(data, x='time', y=['tavg', 'tmin', 'tmax'], labels={
             "value": "Temperatura (°C)",
             "variable": "Tipo de Temperatura"
@@ -220,15 +218,31 @@ def dados_densidade_populacional():
     map_file = '/tmp/heatmap.html'
     m.save(map_file)
 
+    # Título primeiro
+    st.title("Mapa de Densidade Populacional (Heatmap)")
+    
+    # Opções de download
+    st.write("Clique nos links abaixo para baixar os dados:")
+
+    # Adicionando opção de download dos dados
+    csv_data = df_densidade_pop.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="Baixar Dados de Densidade Populacional (CSV)",
+        data=csv_data,
+        file_name='dados_densidade_populacional.csv',
+        mime='text/csv'
+    )
+    
+    # Adicionando opção de download do mapa
     with open(map_file, 'r') as file:
         map_data = file.read()
 
-    map_data_base64 = base64.b64encode(map_data.encode()).decode()
-    href = f'<a href="data:file/html;base64,{map_data_base64}" download="heatmap.html">Download do Mapa</a>'
-
-    st.title("Mapa de Densidade Populacional (Heatmap)")
-    st.write("Clique no link abaixo para baixar o mapa de calor:")
-    st.markdown(href, unsafe_allow_html=True)
+    st.download_button(
+        label="Baixar Mapa de Calor (HTML)",
+        data=map_data,
+        file_name='heatmap.html',
+        mime='text/html'
+    )
 
 # Seleção da página para exibição
 if page == "Escolha entre os boletins":
