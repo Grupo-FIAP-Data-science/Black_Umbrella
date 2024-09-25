@@ -71,7 +71,7 @@ def main():
 
     prefixos = ['meteostat_diario/historico_diario_1950_2024.csv', 'meteostat_horario/horario_2020_2024.csv', 'densidade-demografica/densidade_demografica_2010.csv',
                'localizacoes/estacoes_metro.csv', 'localizacoes/localizacao_arborizacao_viaria.csv', 'localizacoes/localizacao_instituicoes_ensino.csv',
-                'localizacoes/localizacao_servicos_saude_latlon.csv', 'ocorrencias/ocorrencias_com_distritos.csv', 'openweather/dados_previsao_meteorologica.csv']
+                'localizacoes/localizacao_servicos_saude_latlon.csv', 'ocorrencias/ocorrencias_com_distritos.csv', 'openweather/dados_previsao_meteorologica.csv', 'meteorologia_atual/dados_atuais_meteorologicos.csv']
     bucket_name = 'black-umbrella-fiap'
 
     for prefixo in prefixos:

@@ -61,7 +61,7 @@ def upload_to_s3(df):
 def main():
     # Datas de início e fim (pode ser ajustado para obter dados incrementais)
     start_date = datetime(1950, 1, 1)
-    end_date = datetime(2024, 9, 16)
+    end_date = datetime(2024, 9, 23)
     
     df_coord = pd.read_csv('./dados/distritos_lat_lon.csv')
 
