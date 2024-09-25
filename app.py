@@ -59,8 +59,8 @@ st.sidebar.image("/home/ryanrodr/Downloads/black_umbrella.jpeg", width=300)
 st.sidebar.subheader("Navegação")
 distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
-# Adicionar opção de navegação na barra lateral
-page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Previsão de Ocorrências"])
+# Adicionar a página "Avaliação" à barra lateral
+page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Previsão de Ocorrências", "Avaliação"])
 
 # Função para exibir dados diários
 def dados_diarios():
@@ -250,6 +250,44 @@ def dados_densidade_populacional():
         mime='text/html'
     )
 
+import os
+
+def pagina_avaliacao():
+    st.title("Avaliação do Sistema")
+
+    # Campos adicionais
+    nome = st.text_input("Seu Nome (opcional)")
+    email = st.text_input("Seu E-mail (opcional)")
+    data = datetime.now().strftime("%Y-%m-%d")
+
+    # Avaliação por múltiplos critérios
+    facilidade = st.slider("Facilidade de Uso", 0, 5, 3)
+    qualidade_informacao = st.slider("Qualidade da Informação", 0, 5, 3)
+    velocidade_resposta = st.slider("Velocidade de Resposta", 0, 5, 3)
+    design = st.slider("Design/UX", 0, 5, 3)
+
+    comentario = st.text_area("Comentários adicionais", "")
+
+    # Botão para enviar avaliação
+    if st.button("Enviar Avaliação"):
+        st.success("Avaliação enviada com sucesso!")
+
+        # Salvar avaliação em um arquivo CSV
+        salvar_avaliacao(nome, email, data, facilidade, qualidade_informacao, velocidade_resposta, design, comentario)
+
+# Função para salvar avaliação em um arquivo CSV (modificada para incluir novos campos)
+def salvar_avaliacao(nome, email, data, facilidade, qualidade_informacao, velocidade_resposta, design, comentario):
+    arquivo_csv = 'avaliacoes.csv'
+
+    # Verifica se o arquivo já existe
+    if not os.path.isfile(arquivo_csv):
+        with open(arquivo_csv, 'w') as f:
+            f.write('Nome,E-mail,Data,Facilidade,Qualidade,Velocidade,Design,Comentário\n')
+
+    # Adiciona a nova avaliação ao arquivo
+    with open(arquivo_csv, 'a') as f:
+        f.write(f'{nome},"{email}","{data}",{facilidade},{qualidade_informacao},{velocidade_resposta},{design},"{comentario}"\n')
+
 # Seleção da página para exibição
 if page == "Escolha entre os boletins":
     st.sidebar.subheader("Selecione o Boletim")
@@ -268,3 +306,6 @@ elif page == "Dados Densidade Populacional":
 
 elif page == "Previsão de Ocorrências":
     st.write("Página de Previsão de Ocorrências ainda em desenvolvimento.")
+
+elif page == "Avaliação":
+    pagina_avaliacao()
