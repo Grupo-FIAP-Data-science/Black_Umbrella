@@ -60,7 +60,7 @@ st.sidebar.subheader("Navegação")
 distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
 # Adicionar a página "Avaliação" à barra lateral
-page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Previsão de Ocorrências", "Avaliação"])
+page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Teste BI", "Avaliação"])
 
 # Função para exibir dados diários
 def dados_diarios():
@@ -286,6 +286,15 @@ def salvar_avaliacao(nome, email, data, facilidade, qualidade_informacao, veloci
     with open(arquivo_csv, 'a') as f:
         f.write(f'{nome},"{email}","{data}",{facilidade},{qualidade_informacao},{velocidade_resposta},{design},"{comentario}"\n')
 
+def teste_bi():
+    st.title("Previsão de Ocorrências")
+
+    # URL do relatório do Power BI gerado na incorporação
+    power_bi_url = "https://app.powerbi.com/view?r=eyJrIjoiMDY4YjEwNTEtN2I1Zi00N2VkLWFlMWItNmYwYTU5NzlhNzk5IiwidCI6IjU4YjBjYWY5LWFkZjUtNDQxNC1hOThlLTQyM2JlYjEzZGRkZCJ9"
+
+    # Use st.components.v1.iframe para incorporar o relatório no Streamlit
+    st.components.v1.iframe(power_bi_url, width=800, height=600)
+
 # Seleção da página para exibição
 if page == "Escolha entre os boletins":
     st.sidebar.subheader("Selecione o Boletim")
@@ -302,8 +311,8 @@ elif page == "Dados de Localização":
 elif page == "Dados Densidade Populacional":
     dados_densidade_populacional()
 
-elif page == "Previsão de Ocorrências":
-    st.write("Página de Previsão de Ocorrências ainda em desenvolvimento.")
+elif page == "Teste BI":
+    teste_bi()
 
 elif page == "Avaliação":
     pagina_avaliacao()
