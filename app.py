@@ -4,6 +4,7 @@ import requests
 import plotly.express as px
 import folium
 import geopandas as gpd  # type: ignore
+import os
 import json
 import joblib
 import base64
@@ -19,7 +20,6 @@ st.set_page_config(
     page_icon="🌦️",
     layout="wide"
 )
-
 
 # Estilos personalizados
 st.markdown(
@@ -50,17 +50,17 @@ st.markdown(
 )
 
 # Carregar dados dos distritos
-df_distritos = pd.read_csv('dados/distritos_lat_lon.csv')
+df_distritos = pd.read_csv("dados/distritos_lat_lon.csv")
 
 # Exibir logo na sidebar
-st.sidebar.image("/home/ryanrodr/Downloads/black_umbrella.jpeg", width=300)
+st.sidebar.image("black_umbrella.jpeg", width=300)
 
 # Adicionar filtro de distrito na barra lateral
 st.sidebar.subheader("Navegação")
 distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
-# Adicionar opção de navegação na barra lateral
-page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Previsão de Ocorrências"])
+# Adicionar a página "Avaliação" à barra lateral
+page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Teste BI", "Avaliação"])
 
 # Função para exibir dados diários
 def dados_diarios():
@@ -210,7 +210,7 @@ def dados_localizacao():
 
 # Função para exibir dados de densidade populacional
 def dados_densidade_populacional():
-    df_densidade_pop = gpd.read_file('/home/ryanrodr/FIAP/Black_Umbrella/dados/densidade_demografica/SIRGAS_SHP_densidade_demografica_2010.shp')
+    df_densidade_pop = gpd.read_file('dados/densidade_demografica/SIRGAS_SHP_densidade_demografica_2010.shp')
 
     df_densidade_pop = df_densidade_pop.dropna()
     df_densidade_pop = df_densidade_pop.to_crs(epsg=4326)
@@ -250,6 +250,51 @@ def dados_densidade_populacional():
         mime='text/html'
     )
 
+def pagina_avaliacao():
+    st.title("Avaliação do Sistema")
+
+    # Campos adicionais
+    nome = st.text_input("Seu Nome (opcional)")
+    email = st.text_input("Seu E-mail (opcional)")
+    data = datetime.now().strftime("%Y-%m-%d")
+
+    # Avaliação por múltiplos critérios
+    facilidade = st.slider("Facilidade de Uso", 0, 5, 3)
+    qualidade_informacao = st.slider("Qualidade da Informação", 0, 5, 3)
+    velocidade_resposta = st.slider("Velocidade de Resposta", 0, 5, 3)
+    design = st.slider("Design/UX", 0, 5, 3)
+
+    comentario = st.text_area("Comentários adicionais", "")
+
+    # Botão para enviar avaliação
+    if st.button("Enviar Avaliação"):
+        st.success("Avaliação enviada com sucesso!")
+
+        # Salvar avaliação em um arquivo CSV
+        salvar_avaliacao(nome, email, data, facilidade, qualidade_informacao, velocidade_resposta, design, comentario)
+
+# Função para salvar avaliação em um arquivo CSV (modificada para incluir novos campos)
+def salvar_avaliacao(nome, email, data, facilidade, qualidade_informacao, velocidade_resposta, design, comentario):
+    arquivo_csv = 'avaliacoes.csv'
+
+    # Verifica se o arquivo já existe
+    if not os.path.isfile(arquivo_csv):
+        with open(arquivo_csv, 'w') as f:
+            f.write('Nome,E-mail,Data,Facilidade,Qualidade,Velocidade,Design,Comentário\n')
+
+    # Adiciona a nova avaliação ao arquivo
+    with open(arquivo_csv, 'a') as f:
+        f.write(f'{nome},"{email}","{data}",{facilidade},{qualidade_informacao},{velocidade_resposta},{design},"{comentario}"\n')
+
+def teste_bi():
+    st.title("Previsão de Ocorrências")
+
+    # URL do relatório do Power BI gerado na incorporação
+    power_bi_url = "https://app.powerbi.com/view?r=eyJrIjoiMDY4YjEwNTEtN2I1Zi00N2VkLWFlMWItNmYwYTU5NzlhNzk5IiwidCI6IjU4YjBjYWY5LWFkZjUtNDQxNC1hOThlLTQyM2JlYjEzZGRkZCJ9"
+
+    # Use st.components.v1.iframe para incorporar o relatório no Streamlit
+    st.components.v1.iframe(power_bi_url, width=800, height=600)
+
 # Seleção da página para exibição
 if page == "Escolha entre os boletins":
     st.sidebar.subheader("Selecione o Boletim")
@@ -266,5 +311,8 @@ elif page == "Dados de Localização":
 elif page == "Dados Densidade Populacional":
     dados_densidade_populacional()
 
-elif page == "Previsão de Ocorrências":
-    st.write("Página de Previsão de Ocorrências ainda em desenvolvimento.")
+elif page == "Teste BI":
+    teste_bi()
+
+elif page == "Avaliação":
+    pagina_avaliacao()
