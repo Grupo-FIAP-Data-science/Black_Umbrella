@@ -4,6 +4,7 @@ import requests
 import plotly.express as px
 import folium
 import geopandas as gpd  # type: ignore
+import os
 import json
 import joblib
 import base64
@@ -19,7 +20,6 @@ st.set_page_config(
     page_icon="🌦️",
     layout="wide"
 )
-
 
 # Estilos personalizados
 st.markdown(
@@ -50,10 +50,10 @@ st.markdown(
 )
 
 # Carregar dados dos distritos
-df_distritos = pd.read_csv('dados/distritos_lat_lon.csv')
+df_distritos = pd.read_csv("dados/distritos_lat_lon.csv")
 
 # Exibir logo na sidebar
-st.sidebar.image("/home/ryanrodr/Downloads/black_umbrella.jpeg", width=300)
+st.sidebar.image("black_umbrella.jpeg", width=300)
 
 # Adicionar filtro de distrito na barra lateral
 st.sidebar.subheader("Navegação")
@@ -210,7 +210,7 @@ def dados_localizacao():
 
 # Função para exibir dados de densidade populacional
 def dados_densidade_populacional():
-    df_densidade_pop = gpd.read_file('/home/ryanrodr/FIAP/Black_Umbrella/dados/densidade_demografica/SIRGAS_SHP_densidade_demografica_2010.shp')
+    df_densidade_pop = gpd.read_file('dados/densidade_demografica/SIRGAS_SHP_densidade_demografica_2010.shp')
 
     df_densidade_pop = df_densidade_pop.dropna()
     df_densidade_pop = df_densidade_pop.to_crs(epsg=4326)
@@ -249,8 +249,6 @@ def dados_densidade_populacional():
         file_name='heatmap.html',
         mime='text/html'
     )
-
-import os
 
 def pagina_avaliacao():
     st.title("Avaliação do Sistema")
