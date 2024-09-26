@@ -60,7 +60,7 @@ st.sidebar.subheader("Navegação")
 distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
 # Adicionar a página "Avaliação" à barra lateral
-page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dashboard", "Ocorrência", "Avaliação"])
+page = st.sidebar.radio("Escolha a Página", ["Informativo Meteorológico", "Dashboard", "Reportar Ocorrência", "Avaliação do Usuário"])
 
 # Função para exibir dados diários
 def dados_diarios():
@@ -225,10 +225,10 @@ def salvar_avaliacao(nome, email, data, facilidade, qualidade_informacao, veloci
         f.write(f'{nome},"{email}","{data}",{facilidade},{qualidade_informacao},{velocidade_resposta},{design},"{comentario}"\n')
 
 def dashboard():
-    st.title("Previsão de Ocorrências")
+    st.title("Boletins")
 
     # URL do relatório do Power BI gerado na incorporação
-    power_bi_url = "https://app.powerbi.com/view?r=eyJrIjoiNjhmOWU5M2MtN2I2Yy00ODgxLWJkM2ItZTc0N2VkZGY1ZWMyIiwidCI6IjU4YjBjYWY5LWFkZjUtNDQxNC1hOThlLTQyM2JlYjEzZGRkZCJ9"
+    power_bi_url = "https://app.powerbi.com/view?r=eyJrIjoiZTIxZTRjYjUtNjhmZC00MDhhLWFlZjgtZmIxNWUwNzU4YmI4IiwidCI6IjU4YjBjYWY5LWFkZjUtNDQxNC1hOThlLTQyM2JlYjEzZGRkZCJ9&pageName=98eebda01d89b142dd10"
 
     # Use st.components.v1.iframe para incorporar o relatório no Streamlit
     st.components.v1.iframe(power_bi_url, width=800, height=600)
@@ -236,9 +236,6 @@ def dashboard():
 # Função para indicar ocorrência
 def pagina_ocorrencia():
     st.title("Indicação de Ocorrência")
-
-    # Obter o distrito selecionado da barra lateral
-    # distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
     # Obter latitude e longitude do distrito selecionado
     latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
@@ -286,20 +283,20 @@ def salvar_ocorrencia(nome, email, data, latitude, longitude, categoria, descric
         f.write(f'{nome},{email},{data},{latitude},{longitude},{categoria},{descricao},{imagem}\n')
 
 # Seleção da página para exibição
-if page == "Escolha entre os boletins":
+if page == "Informativo Meteorológico":
     st.sidebar.subheader("Selecione o Boletim")
-    boletim = st.sidebar.radio("Escolha o tipo de boletim", ["Dados Diários", "Dados Históricos"])
+    boletim = st.sidebar.radio("Escolha o tipo de boletim", ["Diários", "Históricos"])
 
-    if boletim == "Dados Diários":
+    if boletim == "Diários":
         dados_diarios()
-    elif boletim == "Dados Históricos":
+    elif boletim == "Históricos":
         dados_historicos()
 
 elif page == "Dashboard":
     dashboard()
 
-elif page == "Ocorrência":
+elif page == "Reportar Ocorrência":
     pagina_ocorrencia()
 
-elif page == "Avaliação":
+elif page == "Avaliação do Usuário":
     pagina_avaliacao()
