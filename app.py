@@ -284,8 +284,8 @@ def salvar_ocorrencia(nome, email, data, latitude, longitude, categoria, descric
 
 # Seleção da página para exibição
 if page == "Informativo Meteorológico":
-    st.sidebar.subheader("Selecione o Boletim")
-    boletim = st.sidebar.radio("Escolha o tipo de boletim", ["Diários", "Históricos"])
+    # st.sidebar.subheader("Selecione o Boletim")
+    boletim = st.sidebar.radio("Escolha o tipo de informativo", ["Diários", "Históricos"])
 
     if boletim == "Diários":
         dados_diarios()
