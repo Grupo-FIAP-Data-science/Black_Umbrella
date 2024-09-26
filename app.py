@@ -60,7 +60,7 @@ st.sidebar.subheader("Navegação")
 distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
 
 # Adicionar a página "Avaliação" à barra lateral
-page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dados de Localização", "Dados Densidade Populacional", "Teste BI", "Avaliação"])
+page = st.sidebar.radio("Escolha a Página", ["Escolha entre os boletins", "Dashboard", "Ocorrência", "Avaliação"])
 
 # Função para exibir dados diários
 def dados_diarios():
@@ -188,68 +188,6 @@ def dados_historicos():
             st.subheader("Gráfico de Área das Temperaturas")
             st.plotly_chart(fig_area, use_container_width=True)
 
-# Função para exibir dados de localização
-def dados_localizacao():
-    df_estacoes_metro = pd.read_csv('dados/localizacao_estacoes_metro.csv')
-
-    latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
-    longitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Longitude'].values[0]
-
-    map = folium.Map(location=[latitude, longitude], zoom_start=12)
-    marker_cluster = MarkerCluster().add_to(map)
-
-    for index, row in df_estacoes_metro.iterrows():
-        folium.Marker(
-            location=[row['lat'], row['lon']],
-            popup=row['name2'],
-            icon=folium.Icon(icon='train', prefix='fa')
-        ).add_to(marker_cluster)
-
-    st.title(f"Mapa Interativo para {distrito_selecionado}")
-    st_folium(map, width=700)
-
-# Função para exibir dados de densidade populacional
-def dados_densidade_populacional():
-    df_densidade_pop = gpd.read_file('dados/densidade_demografica/SIRGAS_SHP_densidade_demografica_2010.shp')
-
-    df_densidade_pop = df_densidade_pop.dropna()
-    df_densidade_pop = df_densidade_pop.to_crs(epsg=4326)
-    df_densidade_pop['centroid'] = df_densidade_pop.geometry.centroid
-
-    heat_data = [[point.y, point.x, pop] for point, pop in zip(df_densidade_pop['centroid'], df_densidade_pop['populacao'])]
-
-    m = folium.Map(location=[-23.5505, -46.6333], zoom_start=12)
-    HeatMap(heat_data, radius=15, max_zoom=13).add_to(m)
-
-    map_file = '/tmp/heatmap.html'
-    m.save(map_file)
-
-    # Título primeiro
-    st.title("Mapa de Densidade Populacional (Heatmap)")
-    
-    # Opções de download
-    st.write("Clique nos links abaixo para baixar os dados:")
-
-    # Adicionando opção de download dos dados
-    csv_data = df_densidade_pop.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="Baixar Dados de Densidade Populacional (CSV)",
-        data=csv_data,
-        file_name='dados_densidade_populacional.csv',
-        mime='text/csv'
-    )
-    
-    # Adicionando opção de download do mapa
-    with open(map_file, 'r') as file:
-        map_data = file.read()
-
-    st.download_button(
-        label="Baixar Mapa de Calor (HTML)",
-        data=map_data,
-        file_name='heatmap.html',
-        mime='text/html'
-    )
-
 def pagina_avaliacao():
     st.title("Avaliação do Sistema")
 
@@ -286,14 +224,66 @@ def salvar_avaliacao(nome, email, data, facilidade, qualidade_informacao, veloci
     with open(arquivo_csv, 'a') as f:
         f.write(f'{nome},"{email}","{data}",{facilidade},{qualidade_informacao},{velocidade_resposta},{design},"{comentario}"\n')
 
-def teste_bi():
+def dashboard():
     st.title("Previsão de Ocorrências")
 
     # URL do relatório do Power BI gerado na incorporação
-    power_bi_url = "https://app.powerbi.com/view?r=eyJrIjoiMDY4YjEwNTEtN2I1Zi00N2VkLWFlMWItNmYwYTU5NzlhNzk5IiwidCI6IjU4YjBjYWY5LWFkZjUtNDQxNC1hOThlLTQyM2JlYjEzZGRkZCJ9"
+    power_bi_url = "https://app.powerbi.com/view?r=eyJrIjoiNjhmOWU5M2MtN2I2Yy00ODgxLWJkM2ItZTc0N2VkZGY1ZWMyIiwidCI6IjU4YjBjYWY5LWFkZjUtNDQxNC1hOThlLTQyM2JlYjEzZGRkZCJ9"
 
     # Use st.components.v1.iframe para incorporar o relatório no Streamlit
     st.components.v1.iframe(power_bi_url, width=800, height=600)
+
+# Função para indicar ocorrência
+def pagina_ocorrencia():
+    st.title("Indicação de Ocorrência")
+
+    # Obter o distrito selecionado da barra lateral
+    # distrito_selecionado = st.sidebar.selectbox("Escolha um Distrito", df_distritos['Distrito'].unique())
+
+    # Obter latitude e longitude do distrito selecionado
+    latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
+    longitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Longitude'].values[0]
+
+    # Exibir o distrito e coordenadas automaticamente
+    st.subheader(f"Você selecionou o Distrito: {distrito_selecionado}")
+    st.write(f"**Coordenadas**: {latitude}, {longitude}")
+
+    # Campos de entrada de texto
+    nome = st.text_input("Seu Nome (opcional)")
+    email = st.text_input("Seu E-mail (opcional)")
+    data = datetime.now().strftime("%Y-%m-%d")
+
+    # Categoria da ocorrência
+    categoria = st.selectbox(
+        "Categoria da Ocorrência",
+        ["Queda de Árvore", "Alagamento", "Deslizamento", "Inundação", "Interrupção do Fornecimento de Energia", "Outros"]
+    )
+
+    # Descrição da ocorrência
+    descricao = st.text_area("Descrição da Ocorrência")
+
+    # Upload de imagem (opcional)
+    imagem = st.file_uploader("Anexar uma imagem (opcional)", type=["jpg", "jpeg", "png"])
+
+    # Botão para enviar ocorrência
+    if st.button("Enviar Ocorrência"):
+        st.success("Ocorrência enviada com sucesso!")
+
+        # Salvar ocorrência em um arquivo CSV
+        salvar_ocorrencia(nome, email, data, latitude, longitude, categoria, descricao, imagem)
+
+# Função para salvar a ocorrência em um arquivo CSV (pode ser adaptada para banco de dados)
+def salvar_ocorrencia(nome, email, data, latitude, longitude, categoria, descricao, imagem):
+    arquivo_csv = 'ocorrencias.csv'
+
+    # Verifica se o arquivo já existe
+    if not os.path.isfile(arquivo_csv):
+        with open(arquivo_csv, 'w') as f:
+            f.write('Nome,E-mail,Data,Latitude,Longitude,Categoria,Descrição,Imagem\n')
+
+    # Salva os dados no CSV
+    with open(arquivo_csv, 'a') as f:
+        f.write(f'{nome},{email},{data},{latitude},{longitude},{categoria},{descricao},{imagem}\n')
 
 # Seleção da página para exibição
 if page == "Escolha entre os boletins":
@@ -305,14 +295,11 @@ if page == "Escolha entre os boletins":
     elif boletim == "Dados Históricos":
         dados_historicos()
 
-elif page == "Dados de Localização":
-    dados_localizacao()
+elif page == "Dashboard":
+    dashboard()
 
-elif page == "Dados Densidade Populacional":
-    dados_densidade_populacional()
-
-elif page == "Teste BI":
-    teste_bi()
+elif page == "Ocorrência":
+    pagina_ocorrencia()
 
 elif page == "Avaliação":
     pagina_avaliacao()
