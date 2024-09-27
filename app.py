@@ -3,16 +3,9 @@ import streamlit as st
 import requests
 import plotly.express as px
 import folium
-import geopandas as gpd  # type: ignore
 import os
-import json
-import joblib
-import base64
-
 from meteostat import Point, Daily
 from datetime import datetime
-from folium.plugins import HeatMap, MarkerCluster
-from streamlit_folium import st_folium
 
 # Configuração da página
 st.set_page_config(
