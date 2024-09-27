@@ -225,7 +225,7 @@ def dashboard():
     st.title("Boletins")
 
     # URL do relatório do Power BI gerado na incorporação
-    power_bi_url = "https://app.powerbi.com/view?r=eyJrIjoiZTIxZTRjYjUtNjhmZC00MDhhLWFlZjgtZmIxNWUwNzU4YmI4IiwidCI6IjU4YjBjYWY5LWFkZjUtNDQxNC1hOThlLTQyM2JlYjEzZGRkZCJ9&pageName=98eebda01d89b142dd10"
+    power_bi_url = "https://app.powerbi.com/view?r=eyJrIjoiMzMyNmE1ZjUtODRlZS00MjQ1LTg2MDUtZGFiYjI4YzA3YTEyIiwidCI6IjU4YjBjYWY5LWFkZjUtNDQxNC1hOThlLTQyM2JlYjEzZGRkZCJ9"
 
     # Use st.components.v1.iframe para incorporar o relatório no Streamlit
     st.components.v1.iframe(power_bi_url, width=800, height=600)
