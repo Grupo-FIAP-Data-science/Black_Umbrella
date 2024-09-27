@@ -2,9 +2,13 @@ import pandas as pd
 import streamlit as st
 import requests
 import plotly.express as px
-import folium
 import os
+import folium
 from meteostat import Point, Daily
+from datetime import datetime
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderServiceError
+from streamlit_folium import folium_static
 from datetime import datetime
 
 # Configuração da página
@@ -226,17 +230,34 @@ def dashboard():
     # Use st.components.v1.iframe para incorporar o relatório no Streamlit
     st.components.v1.iframe(power_bi_url, width=800, height=600)
 
+# Função para obter coordenadas de um endereço
+def get_coordinates(address):
+    try:
+        geolocator = Nominatim(user_agent="my_geocoder_app")
+        location = geolocator.geocode(address)
+        if location:
+            return (location.latitude, location.longitude)
+        return None
+    except GeocoderServiceError as e:
+        st.error(f"Erro ao acessar o serviço de geocodificação: {e}")
+        return None
+
+# Função para salvar a ocorrência em um arquivo CSV (pode ser adaptada para banco de dados)
+def salvar_ocorrencia(nome, email, data, latitude, longitude, categoria, descricao, imagem):
+    arquivo_csv = 'ocorrencias.csv'
+
+    # Verifica se o arquivo já existe
+    if not os.path.isfile(arquivo_csv):
+        with open(arquivo_csv, 'w') as f:
+            f.write('Nome,E-mail,Data,Latitude,Longitude,Categoria,Descrição,Imagem\n')
+
+    # Salva os dados no CSV
+    with open(arquivo_csv, 'a') as f:
+        f.write(f'{nome},{email},{data},{latitude},{longitude},{categoria},{descricao},{imagem}\n')
+
 # Função para indicar ocorrência
 def pagina_ocorrencia():
     st.title("Indicação de Ocorrência")
-
-    # Obter latitude e longitude do distrito selecionado
-    latitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Latitude'].values[0]
-    longitude = df_distritos[df_distritos['Distrito'] == distrito_selecionado]['Longitude'].values[0]
-
-    # Exibir o distrito e coordenadas automaticamente
-    st.subheader(f"Você selecionou o Distrito: {distrito_selecionado}")
-    st.write(f"**Coordenadas**: {latitude}, {longitude}")
 
     # Campos de entrada de texto
     nome = st.text_input("Seu Nome (opcional)")
@@ -252,28 +273,39 @@ def pagina_ocorrencia():
     # Descrição da ocorrência
     descricao = st.text_area("Descrição da Ocorrência")
 
+    # Endereço para geolocalização
+    address = st.text_input("Digite o endereço (Rua, Cidade, Estado):")
+    
+    # Se o usuário fornecer um endereço
+    if address:
+        # Obtenha as coordenadas
+        coordinates = get_coordinates(address)
+        
+        if coordinates:
+            latitude, longitude = coordinates
+            # Exibir coordenadas automaticamente
+            st.write(f"**Coordenadas**: {latitude}, {longitude}")
+            
+            # Crie o mapa centrado nas coordenadas encontradas
+            m = folium.Map(location=coordinates, zoom_start=15)
+            # Adicione um marcador no endereço
+            folium.Marker(coordinates, popup=address).add_to(m)
+            # Renderize o mapa no Streamlit
+            folium_static(m)
+        else:
+            st.error("Endereço não encontrado ou erro ao acessar o serviço.")
+    
     # Upload de imagem (opcional)
     imagem = st.file_uploader("Anexar uma imagem (opcional)", type=["jpg", "jpeg", "png"])
 
     # Botão para enviar ocorrência
     if st.button("Enviar Ocorrência"):
-        st.success("Ocorrência enviada com sucesso!")
-
-        # Salvar ocorrência em um arquivo CSV
-        salvar_ocorrencia(nome, email, data, latitude, longitude, categoria, descricao, imagem)
-
-# Função para salvar a ocorrência em um arquivo CSV (pode ser adaptada para banco de dados)
-def salvar_ocorrencia(nome, email, data, latitude, longitude, categoria, descricao, imagem):
-    arquivo_csv = 'ocorrencias.csv'
-
-    # Verifica se o arquivo já existe
-    if not os.path.isfile(arquivo_csv):
-        with open(arquivo_csv, 'w') as f:
-            f.write('Nome,E-mail,Data,Latitude,Longitude,Categoria,Descrição,Imagem\n')
-
-    # Salva os dados no CSV
-    with open(arquivo_csv, 'a') as f:
-        f.write(f'{nome},{email},{data},{latitude},{longitude},{categoria},{descricao},{imagem}\n')
+        if coordinates:
+            st.success("Ocorrência enviada com sucesso!")
+            # Salvar ocorrência em um arquivo CSV
+            salvar_ocorrencia(nome, email, data, latitude, longitude, categoria, descricao, imagem)
+        else:
+            st.error("Não foi possível enviar a ocorrência. Verifique o endereço.")
 
 # Seleção da página para exibição
 if page == "Informativo Meteorológico":
